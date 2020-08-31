@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\lusty work\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\lusty work\\.nuget\\packages"
+    ]
+  }
+}
