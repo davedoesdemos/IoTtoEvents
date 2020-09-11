@@ -174,6 +174,10 @@ This demo includes several components. First there is a data generator written i
 <td width="60%">Next, click on your device to copy the connection string (either primary or secondary is fine). Use this as a parameter for the simulator.</td>
 <td width="40%"><img src="images/keys.png" /></td>
 </tr>
+<tr>
+<td width="60%">Now run the simulator using the connection string to submit some test data. You'll see the data being generated printed on the screen as it gets sent to your IoT hub. You can create multiple devices and run multiple copies if needed. Because IoT Hub acts as a service bus, the data will be stored until it's consumed. After you've consumed it you may need to generate more for further testing, if so just run the app again.</td>
+<td width="40%"><img src="images/runSimulator.png" /></td>
+</tr>
 </table>
 
 ### Storage Account

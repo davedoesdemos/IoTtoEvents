@@ -6,10 +6,33 @@
 
 This is a demo showing you how to use an Azure Function App to process incoming messages from IoT Hub and pass them to an Event Hub further processing. This is useful in situations where your IoT devices might be sending in a JSON array rather than individual values. We can then use a Function App to separate these for individual processing. In this demo we will move them on to an Event Hub where other functions and apps can process them.
 
-
 ## Code
 
+### Create the Function App project
+
+<table>
+<tr>
+<td width="60%">Open Visual Studio and select Create New Project.</td>
+<td width="40%"><img src="images/newProject.png" /></td>
+</tr>
+<tr>
+<td width="60%">Search for and select a new Azure Functions project using C#.</td>
+<td width="40%"><img src="images/newFunctionApp.png" /></td>
+</tr>
+<tr>
+<td width="60%">Give your project a name and location and click create.</td>
+<td width="40%"><img src="images/newProjectName.png" /></td>
+</tr>
+<tr>
+<td width="60%">Select IoT Hub as the trigger. We'll use the storage emulator for local testing, and give the app setting a name of IoTHubConnection.</td>
+<td width="40%"><img src="images/trigger.png" /></td>
+</tr>
+</table>
+
 ### local.settings.json
+
+In your project, open the local.settings.json file and add in values for the IoTHubConnection and eventHubConnection. Also fill in the AzureWebJobStorage with your storage account connection string which is used by the function app.
+
 ```JSON
 {
     "IsEncrypted": false,
@@ -22,9 +45,11 @@ This is a demo showing you how to use an Azure Function App to process incoming 
 }
 ```
 
+Once you compile and upload your function you will need to add these settings to the Function App service in the portal.
+
 ### Function Code
 
-At the top of the file we add in the various modules we need. This will include System.Threading.Tasks to allow us to process multiple events asynchronously, as well as Newtonsoft.Json.Linq to allow us to easily process the JSON data.
+At the top of the file we add in the various modules we need. This will include System.Threading.Tasks to allow us to process multiple events asynchronously, as well as Newtonsoft.Json.Linq to allow us to easily process the JSON data. You may also need to install the modules using NuGet.
 
 ```CSHARP
 using IoTHubTrigger = Microsoft.Azure.WebJobs.EventHubTriggerAttribute;
@@ -53,7 +78,7 @@ namespace IoTProcessor
         private static HttpClient client = new HttpClient();
 ```
 
-Here we have puplic static async Task, indicating that this will spawn multiple tasks. Each task will write a single element from the incoming array to the SQL Server output. We're using tasks here to avoid latency on each event being processed, otherwise the function would need to wait for a response before processing the next element.
+Here we have puplic static async Task, indicating that this will spawn multiple tasks, you'll need to change this since the default is a standard function which returns one value and exits. Since we have one array coming in and then multiple messages going out we need to branch the code out. Each task will write a single element from the incoming array to the SQL Server output. We're using tasks here to avoid latency on each event being processed, otherwise the function would need to wait for a response before processing the next element.
 You can see the trigger in this line with the IoT Hub connection. I also added a Consumer Group (under "built in endpoints on the IoT Hub interface) for this function app. This consumer group ensures that this function has its own pointer within the data in the hub. If you create a second function, use a second consumer group to ensure both get all of the data. To scale you could also have two functions in the same consumer group, with each processing some of the data. 
 Finally we have the Event Hub output. This will be the sink for the function.
 In all of these demos we write the incoming data out to a log so you can see what's happening. This is useful for troubleshooting but not necessary in a production envoironment.
@@ -90,3 +115,34 @@ Next a foreach loop can be used to iterate through the child elements one at a t
     }
 }
 ```
+
+Click to run the app locally and you will see data being processed in the log. First you'll see the incoming array and then each outgoing message. This will continue until all incoming data is processed. You can use Service Bus Explorer (a third party app) to see these messages on the Event Hub.
+
+### Publish
+
+<table>
+<tr>
+<td width="60%">Once you're ready to publish right click on the project and select publish.</td>
+<td width="40%"><img src="images/publishApp.png" /></td>
+</tr>
+<tr>
+<td width="60%">Select Azure as the target.</td>
+<td width="40%"><img src="images/targetAzure.png" /></td>
+</tr>
+<tr>
+<td width="60%">Select Function App Windows target.</td>
+<td width="40%"><img src="images/targetWindows.png" /></td>
+</tr>
+<tr>
+<td width="60%">You may need to log in, then select your Function App in your subscription. Click Finish to complete the task.</td>
+<td width="40%"><img src="images/publishTarget.png" /></td>
+</tr>
+<tr>
+<td width="60%">Click Deploy to push your code to Azure. You can later make changes and click this button to redeploy without needing to go through the whole wizard again.</td>
+<td width="40%"><img src="images/Publish.png" /></td>
+</tr>
+<tr>
+<td width="60%">In the portal, add the keys to match your local.settings.json file. Your app will then start to run and process data.</td>
+<td width="40%"><img src="images/AddKeys.png" /></td>
+</tr>
+</table>
